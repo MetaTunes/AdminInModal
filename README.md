@@ -13,3 +13,6 @@ Full list of options and defaults for the array is :
 * 'class' => "uk-button uk-button-primary" The lightbox will only be rendered if the page is editable by the current user.
 
 Configure editability of the page by calling a hook after User::hasPagePermission
+
+This code has not been fully tested and should be used with care. It is the user's responsibility to check that it suits their needs.
+Because it allows access to the admin back-end, particular care should be taken to restrict page-edit and page-add access.
