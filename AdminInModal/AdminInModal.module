@@ -1,0 +1,68 @@
+<?php namespace ProcessWire;
+
+/*
+ * This module provides a Page hook method ($page->aim($array)) to render a link to a lightbox modal containing an admin page
+ * This can be in either "add" or "edit" mode
+ * In "add" mode the Page object will be the parent page of the one to be added and a template name
+ * can be passed in the array to restrict the template for the type of page to be added.
+ * In "edit" mode (the default), the Page object is the page to be edited.
+ * Optionally, class styling can be passed, otherwise default button styling is supplied.
+ * Full list of options and defaults for the array is :
+ *         $defaults = [
+            'mode' => 'page-edit',  // or page-add
+            'text' => '##',  // the text that will appear in the link
+            'template' => '',  // template for use with page-add
+            'open' => '',  // a parameter that may be passed as a GET variable to the admin page
+            'class' => "uk-button uk-button-primary"
+        ];
+ * The lightbox will only be rendered if the page is editable by the current user.
+ */
+class AdminInModal extends WireData implements Module
+{
+
+    public static function getModuleinfo() {
+        return [
+            'title' => 'Admin in modal (aim)',
+            'summary' => 'Provides hook for admin lightbox in front end.',
+            'author' => 'Mark Evens',
+            'version' => 1,
+            'autoload'  => true,
+            'singular'  => true,
+            'permanent' => false,
+        ];
+    }
+
+    public function ready() {
+        $this->addHook('Page::aim', $this, 'addBox');
+    }
+
+    public function addBox(HookEvent $event) {
+        $p = $event->object;  // $p is parent for page-add mode - otherwise it is page to edit
+        $settings = $event->arguments(0);  // an array
+        $defaults = [
+            'mode' => 'page-edit',  // or page-add
+            'text' => '##',  // the text that will appear in the link
+            'template' => '',  // template for use with page-add
+            'open' => '',  // a parameter that may be passed as a GET variable to the admin page
+            'class' => "uk-button uk-button-primary"  // any suitable styling for an <a> tag
+        ];
+        $boxId = 'box-' . $p->id . $settings['template'];
+        foreach ($defaults as $key => $default) {
+            if (!key_exists($key, $settings)) $settings[$key] = $defaults[$key];
+        }
+        $currentUser = $this->user;
+        if ($p instanceof Page && $p->editable() && $p->template != 'admin' && $currentUser->isLoggedin()) {
+            $today = $this->datetime->date();
+            $template = ($settings['template']) ? $this->templates->get($settings['template']) : null;
+            if ($settings['mode'] == 'page-add') {
+                $pageLink =wire('config')->urls->admin . "page/add/?parent_id=" . $p->id . "&template_id=" . $template->id . "&open=" . $settings['open'] . "&modal=1&name=MF" . $today; // &back=1 removed
+            } else {
+                $pageLink = wire('config')->urls->admin . "page/edit/?id=" . $p->id . "&open=" . $settings['open'] . "&modal=1"; // &back=1 removed
+            }
+            $box = '<a class="' . $settings["class"] . '" data-fancybox=' . $boxId . ' data-type="iframe"' . ' data-src="' . $pageLink .
+                '" data-caption="Save any changes before selecting the close X at the top right">' . // data-modal="true" data-small-btn="true">' .
+                $settings['text'] . '</a>';
+            $event->return = $box;
+        }
+    }
+}
