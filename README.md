@@ -10,7 +10,9 @@ Full list of options and defaults for the array is :
 * 'text' => '##', // the text that will appear in the link 
 * 'template' => '', // template for use with page-add 
 * 'open' => '', // a parameter that may be passed as a GET variable to the admin page
-* 'class' => "uk-button uk-button-primary" The lightbox will only be rendered if the page is editable by the current user.
+* 'class' => "uk-button uk-button-primary" 
+
+The lightbox will only be rendered if the page is editable by the current user.
 
 Configure editability of the page by calling a hook after User::hasPagePermission
 
