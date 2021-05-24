@@ -25,18 +25,27 @@ class AdminInModal extends WireData implements Module
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end.',
             'author' => 'Mark Evens',
-            'version' => 1,
+            'version' => 0.2,
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
         ];
     }
 
+    /**
+     * Create the hook
+     * @throws WireException
+     */
     public function ready() {
         $this->addHook('Page::aim', $this, 'addBox');
     }
 
+    /**
+     * Display relevant fancybox
+     * @param HookEvent $event
+     */
     public function addBox(HookEvent $event) {
+//        wire()->log->save('debug', 'In "Admin in modal" ');
         $p = $event->object;  // $p is parent for page-add mode - otherwise it is page to edit
         $settings = $event->arguments(0);  // an array
         $defaults = [
@@ -46,23 +55,28 @@ class AdminInModal extends WireData implements Module
             'open' => '',  // a parameter that may be passed as a GET variable to the admin page
             'class' => "uk-button uk-button-primary"  // any suitable styling for an <a> tag
         ];
-        $boxId = 'box-' . $p->id . $settings['template'];
         foreach ($defaults as $key => $default) {
             if (!key_exists($key, $settings)) $settings[$key] = $defaults[$key];
         }
+
         $currentUser = $this->user;
         if ($p instanceof Page && $p->editable() && $p->template != 'admin' && $currentUser->isLoggedin()) {
+//            wire()->log->save('debug', 'Edit page ' . $p->title . '. Id = ' . $p->id);
             $today = $this->datetime->date();
             $template = ($settings['template']) ? $this->templates->get($settings['template']) : null;
             if ($settings['mode'] == 'page-add') {
                 $pageLink =wire('config')->urls->admin . "page/add/?parent_id=" . $p->id . "&template_id=" . $template->id . "&open=" . $settings['open'] . "&modal=1&name=MF" . $today; // &back=1 removed
             } else {
                 $pageLink = wire('config')->urls->admin . "page/edit/?id=" . $p->id . "&open=" . $settings['open'] . "&modal=1"; // &back=1 removed
+//                wire()->log->save('debug', 'page link =' . $pageLink);
             }
-            $box = '<a class="' . $settings["class"] . '" data-fancybox=' . $boxId . ' data-type="iframe"' . ' data-src="' . $pageLink .
-                '" data-caption="Save any changes before selecting the close X at the top right">' . // data-modal="true" data-small-btn="true">' .
+            $box = '<a class="' . $settings["class"] . '" data-fancybox data-type="iframe"' . ' data-src="' . $pageLink .  // ' data-fancybox=' . $boxId  removed
+                '" data-caption="Save any changes (buttons at top and bottom of form) before selecting the close X at the top right" href="javascript:;">' . // data-modal="true" data-small-btn="true">' .
+                // NB Save button is added at the top by modalAddSaveButton.js
                 $settings['text'] . '</a>';
             $event->return = $box;
+        } else {
+            wire()->log->save('debug', 'Unable to show admin modal');
         }
     }
 }
