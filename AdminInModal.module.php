@@ -22,12 +22,12 @@
 class AdminInModal extends WireData implements Module
 {
 
-    public static function getModuleinfo() {
+    public static function getModuleInfo() {
         return [
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.2.5',
+            'version' => '0.2.6',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
