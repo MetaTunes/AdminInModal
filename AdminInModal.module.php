@@ -27,7 +27,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.3.0',
+            'version' => '0.3.1',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
@@ -44,13 +44,36 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'class' => "uk-button uk-button-primary", // any suitable styling for an <a> tag
 			'width' => '90%', // size for iframe
 			'height' => '95%',
-			'headerText' => 'Save required changes before closing -->', // Text to appear above top left of modal
-			'saveHeadButton' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
-			'suppressNotices' => 'messages warnings errors', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
-			'closeButton' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
+			'header-text' => 'Save required changes before closing -->', // Text to appear above top left of modal
+			'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
+			'suppress-notices' => 'messages warnings errors', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
+			'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
 			'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
 			'overridePwModal' => '1', // set to '0' to use the standard ProcessWire modal unless aim() is specifically called
 		];
+	}
+
+	public function __construct() {
+		$this->text = '##';
+		$this->class = "uk-button uk-button-primary";
+		$this->width = '90%';
+		$this->height = '95%';
+		$this->headerText = 'Save required changes before closing -->';
+		$this->saveHeadButton = '1';
+		$this->suppressNotices = 'messages warnings errors';
+		$this->closeButton = '1';
+		$this->redirect = '.';
+	}
+
+	public function camelDefaults() {
+		$defaults = $this->setDefaults();
+		$hyphenated = [];
+		foreach($defaults as $key => $value) {
+			$newKey = str_replace('-', '', lcfirst(ucwords($key, '-')));
+			bd($newKey, 'newKey');
+			$hyphenated[$newKey] = $value;
+		}
+		return $hyphenated;
 	}
 
 	public function init() {
@@ -94,10 +117,10 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'class' => $this->class, // any suitable styling for an <a> tag
 			'width' => $this->width, // size for iframe
 			'height' => $this->height,
-			'headerText' => $this->headerText, // Text to appear above top left of modal
-			'saveHeadButton' => $this->saveHeadButton, // Adds a save button at the top of the modal. Set to '0' to omit.
-			'suppressNotices' => $this->suppressNotices, // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
-			'closeButton' => $this->closeButton, // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
+			'header-text' => $this->headerText, // Text to appear above top left of modal
+			'save-head-button' => $this->saveHeadButton, // Adds a save button at the top of the modal. Set to '0' to omit.
+			'suppress-notices' => $this->suppressNotices, // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
+			'close-button' => $this->closeButton, // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
 			'redirect' => $this->redirect, // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
 		]
 		: $this->setDefaults();
@@ -117,8 +140,8 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			if($currentUser->isLoggedin()) {
 				$pageLink = $this->setPageLink($settings);
 				$box = '<a class="' . $settings["class"] . ' magnific-modal"' . ' data-mfp-src="' . $pageLink . '" data-aim-width="' . $settings["width"] .
-					'" data-aim-height="' . $settings["height"] . '" data-header-text="' . $settings["headerText"] . '" data-save-head-button="' . $settings["saveHeadButton"]
-					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["closeButton"] . '" data-redirect="' . $settings["redirect"] . '">' .
+					'" data-aim-height="' . $settings["height"] . '" data-header-text="' . $settings["header-text"] . '" data-save-head-button="' . $settings["save-head-button"]
+					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"] . '" data-redirect="' . $settings["redirect"] . '">' .
 					$settings["text"] . '</a>';
 				$event->return = $box;
 				//bd($box, 'box');
@@ -131,10 +154,10 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			$f->attr('data-mfp-src', $pageLink);
 			$f->attr('data-aim-width', $settings['width']);
 			$f->attr('data-aim-height', $settings['height']);
-			$f->attr('data-save-head-button', $settings['saveHeadButton']);
-			$f->attr('data-suppress-notices', $settings['suppressNotices']);
-			$f->attr('data-header-text', $settings['headerText']);
-			$f->attr('data-close-button', $settings['closeButton']);
+			$f->attr('data-save-head-button', $settings['save-head-button']);
+			$f->attr('data-suppress-notices', $settings['suppress-notices']);
+			$f->attr('data-header-text', $settings['header-text']);
+			$f->attr('data-close-button', $settings['close-button']);
 			$f->attr('data-redirect', $settings['redirect']);
 			$f->addClass("magnific-modal");
 			$event->return = $f;
@@ -166,7 +189,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 	}
 	public function getModuleConfigInputfields(InputfieldWrapper $inputfields) {
 		$modules = $this->wire()->modules;
-		$data = array_merge($this->setDefaults(), $modules->getConfig($this));
+		$data = array_merge($this->camelDefaults(), $modules->getConfig($this));
 
 		/* @var InputfieldText $f */
 		$f = $modules->InputfieldText;
