@@ -27,7 +27,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.3.1',
+            'version' => '0.3.2',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
@@ -124,7 +124,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'redirect' => $this->redirect, // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
 		]
 		: $this->setDefaults();
-		//bd($defaults, 'defaults');
+//		bd($defaults, 'defaults');
 		if(!$settings) {
 			$settings = $defaults;
 		} else {
@@ -141,7 +141,8 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 				$pageLink = $this->setPageLink($settings);
 				$box = '<a class="' . $settings["class"] . ' magnific-modal"' . ' data-mfp-src="' . $pageLink . '" data-aim-width="' . $settings["width"] .
 					'" data-aim-height="' . $settings["height"] . '" data-header-text="' . $settings["header-text"] . '" data-save-head-button="' . $settings["save-head-button"]
-					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"] . '" data-redirect="' . $settings["redirect"] . '">' .
+					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"] . '" data-redirect="' . $settings["redirect"]
+					. '" href="' . $pageLink . '">' .
 					$settings["text"] . '</a>';
 				$event->return = $box;
 				//bd($box, 'box');
