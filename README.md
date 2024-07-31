@@ -18,7 +18,7 @@ Full list of options and defaults for the array is :
     *   'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
 	*   'suppress-notices' => 'messages', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
     *   'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
-    *   'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
+    *   'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress). Use '#divid' to scroll to a specific div on current page
 
 From v0.3.0, these defaults can be changed in the module config settings.
 

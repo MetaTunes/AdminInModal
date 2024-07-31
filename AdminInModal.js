@@ -72,7 +72,18 @@ $(document).ready(function ($) {
                 if (window.location.href == window.location.protocol + '//' + window.location.hostname + $(this).data('redirect') || $(this).data('redirect') == '.') {
                     window.location.reload();
                 } else {
-                    window.location.href = $(this).data('redirect');
+                    if ($(this).data('redirect').substring(0, 1) == '#') {
+                        // remove any existing hashes before adding the new one
+                        const fullUrl = location.href;
+                        const hashIndex = fullUrl.indexOf(location.hash);
+                        const urlWithoutHash = hashIndex !== -1 ? fullUrl.substring(0, hashIndex) : fullUrl;
+                        // console.log(urlWithoutHash);
+                        window.location.href = urlWithoutHash + $(this).data('redirect');
+                        // below is because it doesn't reload the page if the urlWithoutHash is the same
+                        window.location.reload();
+                    // } else {
+                        window.location.href = $(this).data('redirect');
+                    }
                 }
             }
         });

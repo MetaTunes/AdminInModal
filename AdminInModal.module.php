@@ -27,7 +27,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.3.2',
+            'version' => '0.3.3',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
@@ -48,7 +48,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
 			'suppress-notices' => 'messages warnings errors', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
 			'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
-			'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
+			'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress). Use '#divid' to scroll to a specific div on current page
 			'overridePwModal' => '1', // set to '0' to use the standard ProcessWire modal unless aim() is specifically called
 		];
 	}
