@@ -18,9 +18,17 @@ Full list of options and defaults for the array is :
     *   'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
 	*   'suppress-notices' => 'messages', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
     *   'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
+    *   'close-on-save' => 'no',  // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
+                                  // "messages": allow close if there are only messages, "errors warnings messages": always close regardless of notices
+                                  // If "add" is included in the list, then the popup will close on save if it is a page add operation, otherwise it will remain open to edit  
     *   'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress). Use '#divid' to scroll to a specific div on current page
 
 From v0.3.0, these defaults can be changed in the module config settings.
+
+Note that suppress-notices and close-on-save options should be consistent. Do not suppress notices which will cause 
+close-on-save to be avoided. For example, if you suppress errors and you want to avoid close-on-save in case of errors 
+(e.g. by using 'close-on-save' => 'messages warnings'), then the user will not see why the
+close has not occurred.
 
 For front-end use, the lightbox will only be rendered if the page is editable by the current user.
 

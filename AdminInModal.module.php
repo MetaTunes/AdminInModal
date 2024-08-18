@@ -15,6 +15,9 @@
 			'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
 			'suppress-notices' => 'messages', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
         	'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
+			'close-on-save' => 'no', // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
+                                     // "messages": allow close if there are only messages, "errors warnings messages": always close regardless of notices
+                                     // If "add" is included in the list, then the popup will close on save if it is a page add operation
 			'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
         ];
  * The lightbox will only be rendered if the page is editable by the current user.
@@ -46,8 +49,11 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'height' => '95%',
 			'header-text' => 'Save required changes before closing -->', // Text to appear above top left of modal
 			'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
-			'suppress-notices' => 'messages warnings errors', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
+			'suppress-notices' => 'messages', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
 			'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
+			'close-on-save' => 'no', // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
+									// "messages": allow close if there are only messages, "errors warnings messages": always close regardless of notices
+									// If "add" is included in the list, then the popup will close on save if it is a page add operation
 			'redirect' => '.', // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress). Use '#divid' to scroll to a specific div on current page
 			'overridePwModal' => '1', // set to '0' to use the standard ProcessWire modal unless aim() is specifically called
 		];
@@ -62,6 +68,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 		$this->saveHeadButton = '1';
 		$this->suppressNotices = 'messages warnings errors';
 		$this->closeButton = '1';
+		$this->closeOnSave = 'no';
 		$this->redirect = '.';
 	}
 
@@ -70,7 +77,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 		$hyphenated = [];
 		foreach($defaults as $key => $value) {
 			$newKey = str_replace('-', '', lcfirst(ucwords($key, '-')));
-			bd($newKey, 'newKey');
+//			bd($newKey, 'newKey');
 			$hyphenated[$newKey] = $value;
 		}
 		return $hyphenated;
@@ -121,6 +128,9 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'save-head-button' => $this->saveHeadButton, // Adds a save button at the top of the modal. Set to '0' to omit.
 			'suppress-notices' => $this->suppressNotices, // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
 			'close-button' => $this->closeButton, // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
+			'close-on-save' => $this->closeOnSave, // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
+													// "messages": allow close if there are only messages, "errors warnings messages": always close regardless of notices
+													// If "add" is included in the list, then the popup will close on save if it is a page add operation
 			'redirect' => $this->redirect, // url to redirect to after closing the modal - default is to reload the current page (use redirect => '' to suppress)
 		]
 		: $this->setDefaults();
@@ -141,7 +151,8 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 				$pageLink = $this->setPageLink($settings);
 				$box = '<a class="' . $settings["class"] . ' magnific-modal"' . ' data-mfp-src="' . $pageLink . '" data-aim-width="' . $settings["width"] .
 					'" data-aim-height="' . $settings["height"] . '" data-header-text="' . $settings["header-text"] . '" data-save-head-button="' . $settings["save-head-button"]
-					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"] . '" data-redirect="' . $settings["redirect"]
+					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"]
+					. '" data-close-on-save="' . $settings["close-on-save"] . '" data-redirect="' . $settings["redirect"]
 					. '" href="' . $pageLink . '">' .
 					$settings["text"] . '</a>';
 				$event->return = $box;
@@ -159,6 +170,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			$f->attr('data-suppress-notices', $settings['suppress-notices']);
 			$f->attr('data-header-text', $settings['header-text']);
 			$f->attr('data-close-button', $settings['close-button']);
+			$f->attr('data-close-on-save', $settings['close-on-save']);
 			$f->attr('data-redirect', $settings['redirect']);
 			$f->addClass("magnific-modal");
 			$event->return = $f;
@@ -258,6 +270,19 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 		$f->description = 'Uncheck to remove close button (but you\'d better be sure you know how the modal will be closed!)';
 		$f->value = $data['closeButton'];
 		$f->checked = ($f->value == 1) ? 'checked' : '';
+		$inputfields->add($f);
+
+		/* @var InputfieldText $f */
+		$f = $modules->InputfieldText;
+		$f->attr('name', 'closeOnSave');
+		$f->label = 'Close on save';
+		$f->description = 'Choose whether to close on save and, if so, to allow close on message, warnings or errors';
+		$f->notes = "e.g. 'no': no close-on-save
+		 '' (i.e. empty): allow, but any error, warning or message will prevent close-on-save
+		  'messages': allow close if there are only messages
+		   'errors warnings messages': always close regardless of notices
+		    If 'add' is included in the list, then the popup will close on save if it is a page add operation";
+		$f->value = $data['closeOnSave'];
 		$inputfields->add($f);
 
 		/* @var InputfieldText $f */

@@ -4,6 +4,9 @@ $(document).ready(function ($) {
     See https://stackoverflow.com/questions/40218341/typeerror-magnificpopup-is-not-a-function
      */
 
+    var $iframe;
+    var noClose = false;
+
     /*
     Enable magnific popup when clicked
      */
@@ -22,20 +25,21 @@ $(document).ready(function ($) {
                     '</div>', // HTML markup of popup, `mfp-close` will be replaced by the close button
             },
             closeOnBgClick: false,
+            closeBtnInside: true,
             callbacks: {
                 open: function () {
-                    // Will fire when this exact popup is opened
-                    // this - is Magnific Popup object
+                    //  console.log('Popup opened', $.magnificPopup.instance);
+                    // console.log('Contents', $.magnificPopup.instance.content);
+                    // console.log('iframe', $.magnificPopup.instance.content.find('iframe'));
+                    if($.magnificPopup && $.magnificPopup.instance.content) {
+                        $iframe = $.magnificPopup.instance.content.find('iframe');
+                        onLoadIframe();
+                        // onSubmit();
+                        }
+                    sessionStorage.setItem('closeOnSaveReady', 'false');  // reset the closeOnSaveReady flag
+                    // console.log('closeOnSaveReady 0', sessionStorage.getItem('closeOnSaveReady'));
                 },
             },
-            // elementParse: function (item) {
-            //     console.log(item, 'parseItem');
-            // },
-            // change: function() {
-            //     console.log('Content changed');
-            //     console.log(this.content); // Direct reference to your popup element
-            // },
-            // }
         });
 
         /*
@@ -51,9 +55,12 @@ $(document).ready(function ($) {
             let suppressNotices = $(this).data('suppress-notices');
             let headerText = $(this).data('header-text');
             let closeButton = $(this).data('close-button');
-            $.magnificPopup.instance.contentContainer.attr({'style': 'max-width: ' + width + ' !important; max-height: ' + height + ' !important;'});
+            let closeOnSave = $(this).data('close-on-save');
+            // console.log('closeOnSave', closeOnSave);
+            $.magnificPopup.instance.contentContainer.attr({'style': 'width: ' + width + ' !important; height: ' + height + ' !important;'});
             $.magnificPopup.instance.content.attr({'save-head-button': addSaveHead});
             $.magnificPopup.instance.content.attr({'suppress-notices': suppressNotices});
+            $.magnificPopup.instance.content.attr({'close-on-save': closeOnSave});
             $.magnificPopup.instance.content.prepend("<div>" + headerText + "</div>")
             if (closeButton == '0') {
                 $.magnificPopup.instance.currTemplate.closeBtn.remove();
@@ -68,6 +75,7 @@ $(document).ready(function ($) {
             // console.log('location.href', window.location.href);
             // console.log('location.protocol', window.location.protocol);
             // console.log('location.hostname', window.location.hostname);
+            sessionStorage.removeItem('closeOnSaveReady');
             if ($(this).data('redirect')) {
                 if (window.location.href == window.location.protocol + '//' + window.location.hostname + $(this).data('redirect') || $(this).data('redirect') == '.') {
                     window.location.reload();
@@ -81,7 +89,7 @@ $(document).ready(function ($) {
                         window.location.href = urlWithoutHash + $(this).data('redirect');
                         // below is because it doesn't reload the page if the urlWithoutHash is the same
                         window.location.reload();
-                    // } else {
+                    } else {
                         window.location.href = $(this).data('redirect');
                     }
                 }
@@ -106,13 +114,102 @@ $(document).ready(function ($) {
         customiseForm();
     }
 
+    function onLoadIframe() {
+        // console.log('iframe length', $iframe.length);
+        // console.log('closeOnSaveReady 1', sessionStorage.getItem('closeOnSaveReady'));
+
+        if ($iframe.length > 0) $iframe.on('load', function () {
+            // console.log('noClose', noClose);
+            // console.log('closeOnSaveReady 2', sessionStorage.getItem('closeOnSaveReady'));
+            var $iframeBodyModal = $($iframe[0].contentWindow.document).find('body.modal');
+            // console.log('iframe body modal', $iframeBodyModal);
+            // console.log('Saving - check length', $iframeBodyModal.find(".NoticeError, .ui-state-error").length);
+            let isAdd = $iframeBodyModal.find('#ProcessPageAdd').length > 0;
+            // console.log('isAdd', isAdd);
+            let content = parent.document.getElementById('aim-mfp');
+            if (content != null) {
+                let closeOnSave = content.getAttribute('close-on-save');
+                // console.log(closeOnSave, 'closeOnSave');
+                /*
+                closeOnSave is a space-separated list of notice types that will allow the popup to close on save, or the word 'no' - in which case the popup will not close
+                e.g."no": no close-on-save, "": allow, but any error, warning or message will prevent close-on-save, "messages": allow close if there are only messages, "errors warnings messages": always close regardless of notices'
+                If "add" is included in the list, then the popup will close on save if it is a page add operation
+                We set findErrors to the corresponding jQuery selector
+                 */
+                let findErrors = '';
+                let includeAdd = false;
+                if (closeOnSave != 'no') {
+                    let closeArray = closeOnSave.split(" ");
+                    closeArray.forEach(function (el, index, arr) {
+                        let noticeType = el.trim();
+                        if(noticeType === 'add') {
+                            includeAdd = true;
+                            return;
+                        }
+                        if (noticeType.slice(-1) === 's') {
+                            noticeType = noticeType.slice(0, -1); // Remove the final 's'
+                        }
+                        findErrors += '.Notice' + noticeType.charAt(0).toUpperCase() + noticeType.slice(1) + ', ';
+                    });
+                    findErrors = ['.NoticeError', '.NoticeWarning', '.NoticeMessage'].filter(x => !findErrors.split(", ").includes(x)).join(', ');  // return the 'complement' of findErrors
+                    if (findErrors.includes('.NoticeError')) {
+                        findErrors += ', .ui-state-error, ';
+                    }
+                    findErrors = findErrors.substring(0, findErrors.length - 2);  // remove the final comma
+                }
+                // console.log('includeAdd', includeAdd);
+                // console.log('findErrors', findErrors);
+                if (!includeAdd && isAdd) {
+                    noClose = true;
+                }
+
+
+                if (sessionStorage.getItem('closeOnSaveReady') == 'true') {
+                    if (closeOnSave != 'no' && (!findErrors || $iframeBodyModal.find(findErrors).length == 0)) {
+                        if (typeof Notifications != "undefined") {
+                            var messages = [];
+                            $('body.modal').find(".NoticeMessage").each(function () {
+                                messages[messages.length] = $(this).text();
+                            });
+                            if (messages.length > 0) setTimeout(function () {
+                                for (var i = 0; i < messages.length; i++) {
+                                    Notifications.message(messages[i]);
+                                }
+                            }, 500);
+                        }
+                        // console.log('Close Popup');
+                        /*
+                        NB The action to close the popup appears to be cached if the conditions are not met and then actioned as soon as the conditions are met
+                        By making it dependent on noClose, we can prevent the popup from closing until noClose is set to false even if the earlier conditions are met
+                         */
+                        if (!noClose) $.magnificPopup.close();
+                        noClose = false;
+                        // console.log('Popup closed');
+                        // return;
+                    } else {
+                        // console.log('Popup left open');
+                        // sessionStorage.setItem('closeOnSaveReady', 'false');
+                        // errors occurred, so keep it open
+                    }
+                }
+            }
+        });
+    }
+
 
     /*
     Dim while saving
      */
-    $("[name=submit_save]").on('click', function () {
-        $('body.modal').css("opacity", 0.2);
-    });
+
+        $submit = $('form button.ui-button[type=submit]');
+        // console.log('submit', $submit);
+        $($submit).on('click', function (event) {
+            sessionStorage.setItem('closeOnSaveReady', 'true');
+            noClose = true;
+            // console.log('closeOnSaveReady 3', sessionStorage.getItem('closeOnSaveReady'));
+            $('body.modal').css("opacity", 0.2);
+
+        });
 
 
 });
@@ -133,7 +230,7 @@ function customiseForm() {
                 '</span></div>');
         }
         let suppressNotices = content.getAttribute('suppress-notices');
-        console.log(suppressNotices, 'suppressNotices');
+        // console.log(suppressNotices, 'suppressNotices');
         let suppressArray = suppressNotices.split(" ");
         suppressArray.forEach(function (el, index, arr) {
             var noticeText = '.Notice' + el.charAt(0).toUpperCase()
@@ -141,7 +238,7 @@ function customiseForm() {
             if(noticeText.length > 0) {
                 noticeText = noticeText.substring(0, noticeText.length - 1);  // remove the 's'
                 let selector = 'body.modal .pw-notices ' + noticeText;
-                console.log(selector, 'selector to hide');
+                // console.log(selector, 'selector to hide');
                 $(selector).hide();
             }
         });
