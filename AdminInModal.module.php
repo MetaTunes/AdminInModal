@@ -30,7 +30,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.3.3',
+            'version' => '0.3.4',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,

@@ -77,10 +77,11 @@ $(document).ready(function ($) {
             // console.log('location.hostname', window.location.hostname);
             sessionStorage.removeItem('closeOnSaveReady');
             if ($(this).data('redirect')) {
-                if (window.location.href == window.location.protocol + '//' + window.location.hostname + $(this).data('redirect') || $(this).data('redirect') == '.') {
+                const redirect = $(this).data('redirect');
+                if (window.location.href === window.location.protocol + '//' + window.location.hostname + redirect || redirect === '.') {
                     window.location.reload();
                 } else {
-                    if ($(this).data('redirect').substring(0, 1) == '#') {
+                    if (redirect.startsWith('#')) {
                         // remove any existing hashes before adding the new one
                         const fullUrl = location.href;
                         const hashIndex = fullUrl.indexOf(location.hash);
@@ -97,6 +98,31 @@ $(document).ready(function ($) {
         });
 
     });
+
+    //To ensure that the browser attempts the scroll once the DOM is fully loaded, we can use the window load event.
+    // This way, if the page has an anchor in the URL, it will attempt to scroll to it once the page finishes loading.
+    // With thanks to ChatGPT
+    window.addEventListener("load", () => {
+        const hash = window.location.hash;
+        if (hash) {
+            const anchorElement = document.querySelector(hash);
+
+            if (anchorElement) {
+                // Initial scroll attempt
+                anchorElement.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                // Fallback with a single delayed check to ensure scrolling works
+                requestAnimationFrame(() => {
+                    if (Math.abs(anchorElement.getBoundingClientRect().top) > 5) {
+                        anchorElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                });
+            }
+        }
+    });
+
+
+
 
 
     // Open the popup when an element is clicked
