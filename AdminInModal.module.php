@@ -30,7 +30,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.3.4',
+            'version' => '0.3.5',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
@@ -156,13 +156,14 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 					. '" href="' . $pageLink . '">' .
 					$settings["text"] . '</a>';
 				$event->return = $box;
-				//bd($box, 'box');
+//				bd($box, 'box');
 			} else {
 				wire()->log->save('debug', 'AdminInModal: Unable to show admin modal - access denied');
 			}
 		} else if($event->object instanceof Inputfield) {
 			$f = $event->object;
 			$pageLink = $this->setPageLink($settings);
+			$f->set('class', $settings['class']);
 			$f->attr('data-mfp-src', $pageLink);
 			$f->attr('data-aim-width', $settings['width']);
 			$f->attr('data-aim-height', $settings['height']);

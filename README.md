@@ -2,7 +2,8 @@
 A module for ProcessWire CMS/CMF. Allows display and customisation of admin page in front end as well as back end via a modal.
 Tested in Windows and IOS envrionments.
 
-The module provides a Page hook method ($page->aim($array)) for front-end use and a similar Inputfield hook (for back-end use: $inputfield->aim($array)) to render a link to a lightbox modal containing an admin page.
+The module provides a Page hook method (```$page->aim($array)```) for front-end use and a similar Inputfield hook (for back-end use: ```$inputfield->aim($array)```) to render a link to a lightbox modal containing an admin page.
+If you wish to use it in the back end outside of an Inputfield context, you can craate a new page ```$p = new Page()``` and use the ```$p->aim($array)``` method.
 
 Optionally, class styling can be passed in the array, otherwise default button styling is supplied.
 Minimally, you need to supply the 'href' and 'text' options in the array.

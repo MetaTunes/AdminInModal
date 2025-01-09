@@ -1,3 +1,6 @@
 .mfp-close {
   width: min-content !important;
 }
+.mfp-content {
+  max-width: 100% !important;
+}
