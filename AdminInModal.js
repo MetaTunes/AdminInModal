@@ -52,6 +52,7 @@ $(document).ready(function ($) {
             let width = $(this).data('aim-width');
             let height = $(this).data('aim-height');
             let addSaveHead = $(this).data('save-head-button');
+            let breakOut = $(this).data('breakout-button');
             let suppressNotices = $(this).data('suppress-notices');
             let headerText = $(this).data('header-text');
             let closeButton = $(this).data('close-button');
@@ -59,6 +60,7 @@ $(document).ready(function ($) {
             // console.log('closeOnSave', closeOnSave);
             $.magnificPopup.instance.contentContainer.attr({'style': 'width: ' + width + ' !important; height: ' + height + ' !important;'});
             $.magnificPopup.instance.content.attr({'save-head-button': addSaveHead});
+            $.magnificPopup.instance.content.attr({'breakout-button': breakOut});
             $.magnificPopup.instance.content.attr({'suppress-notices': suppressNotices});
             $.magnificPopup.instance.content.attr({'close-on-save': closeOnSave});
             $.magnificPopup.instance.content.prepend("<div>" + headerText + "</div>")
@@ -237,9 +239,19 @@ $(document).ready(function ($) {
 
         });
 
-
+    $('#aim-breakout').on('click', function (event) {
+        var iframeSrc = parent.document.getElementsByClassName("mfp-iframe")[0].getAttribute('src');
+        // console.log(iframeSrc, 'iframe src');
+        let noModal = iframeSrc.replace('aim-mfp=1&modal=1&', '');
+        parent.closeIframe(noModal);
+    });
 });
 
+function closeIframe(url) {
+    // console.log('closeIframe', url);
+    $('iframe').remove();
+    window.location.href = url;
+}
 
 /*
 Add Save button at top of modal and suppress notices according to param set
@@ -254,6 +266,15 @@ function customiseForm() {
                 '<button id="submit_save_copy" class="ui-button ui-widget ui-corner-all pw-head-button pw-button-dropdown-main ui-state-default" ' +
                 'name="submit_save" value="Save" type="submit" data-from_id="submit_save"><span class="ui-button-text">Save</span></button>' +
                 '</span></div>');
+        }
+        let breakOut = content.getAttribute('breakout-button');
+        if(breakOut == '1') {
+            var src = parent.document.getElementById('aim-mfp').getAttribute('src');
+            $('body.modal.ProcessPageEdit form, body.modal.ProcessPageAdd form').prepend('<div id="pw-content-head-buttons 2" ' +
+                'class="uk-visible uk-grid uk-float-right">' +
+                '<button id="aim-breakout" class="ui-button ui-priority-secondary ui-widget ui-corner-all pw-head-button ui-state-default" ' +
+                'name="breakout" value="breakout"><span class="ui-button-text">Open in full page (save first if required)</a></button>' +
+                '</div>');
         }
         let suppressNotices = content.getAttribute('suppress-notices');
         // console.log(suppressNotices, 'suppressNotices');

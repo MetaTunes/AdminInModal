@@ -13,6 +13,7 @@
 			'height' => '95%',
 			'header-text' => 'Save required changes before closing -->', // Text to appear above top left of modal
 			'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
+			'breakout-button' => '0', // Adds a breakout button at the top of the modal (to enable break out into full page). Set to '1' to include.
 			'suppress-notices' => 'messages', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
         	'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
 			'close-on-save' => 'no', // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
@@ -30,7 +31,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
             'title' => 'Admin in modal (aim)',
             'summary' => 'Provides hook for admin lightbox in front end as well as back end.',
             'author' => 'Mark Evens',
-            'version' => '0.3.5',
+            'version' => '0.4.0',
             'autoload'  => true,
             'singular'  => true,
             'permanent' => false,
@@ -49,6 +50,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'height' => '95%',
 			'header-text' => 'Save required changes before closing -->', // Text to appear above top left of modal
 			'save-head-button' => '1', // Adds a save button at the top of the modal. Set to '0' to omit.
+			'breakout-button' => '0', // Adds a breakout button at the top of the modal. Set to '1' to include.
 			'suppress-notices' => 'messages', // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
 			'close-button' => '1', // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
 			'close-on-save' => 'no', // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
@@ -66,6 +68,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 		$this->height = '95%';
 		$this->headerText = 'Save required changes before closing -->';
 		$this->saveHeadButton = '1';
+		$this->breakoutButton = '0';
 		$this->suppressNotices = 'messages warnings errors';
 		$this->closeButton = '1';
 		$this->closeOnSave = 'no';
@@ -126,6 +129,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			'height' => $this->height,
 			'header-text' => $this->headerText, // Text to appear above top left of modal
 			'save-head-button' => $this->saveHeadButton, // Adds a save button at the top of the modal. Set to '0' to omit.
+			'breakout-button' => $this->breakoutButton, // Adds a breakout button at the top of the modal. Set to '1' to include.
 			'suppress-notices' => $this->suppressNotices, // e.g. null/[]: no suppression, 'messages': suppress messages, 'warnings messages': suppress warnings & messages, 'errors': suppress errors
 			'close-button' => $this->closeButton, // set to '0' to remove close button (but you'd better be sure you know how the modal will be closed!)
 			'close-on-save' => $this->closeOnSave, // "no": no close-on-save, "":  allow, but any error, warning or message will prevent close-on-save,
@@ -151,12 +155,12 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 				$pageLink = $this->setPageLink($settings);
 				$box = '<a class="' . $settings["class"] . ' magnific-modal"' . ' data-mfp-src="' . $pageLink . '" data-aim-width="' . $settings["width"] .
 					'" data-aim-height="' . $settings["height"] . '" data-header-text="' . $settings["header-text"] . '" data-save-head-button="' . $settings["save-head-button"]
-					. '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"]
+					. '" data-breakout-button="' . $settings["breakout-button"] . '" data-suppress-notices="' . $settings["suppress-notices"] . '" data-close-button="' . $settings["close-button"]
 					. '" data-close-on-save="' . $settings["close-on-save"] . '" data-redirect="' . $settings["redirect"]
 					. '" href="' . $pageLink . '">' .
 					$settings["text"] . '</a>';
 				$event->return = $box;
-//				bd($box, 'box');
+				//bd($box, 'box');
 			} else {
 				wire()->log->save('debug', 'AdminInModal: Unable to show admin modal - access denied');
 			}
@@ -168,6 +172,7 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 			$f->attr('data-aim-width', $settings['width']);
 			$f->attr('data-aim-height', $settings['height']);
 			$f->attr('data-save-head-button', $settings['save-head-button']);
+			$f->attr('data-breakout-button', $settings['breakout-button']);
 			$f->attr('data-suppress-notices', $settings['suppress-notices']);
 			$f->attr('data-header-text', $settings['header-text']);
 			$f->attr('data-close-button', $settings['close-button']);
@@ -252,6 +257,15 @@ class AdminInModal extends WireData implements Module, ConfigurableModule
 		$f->label = 'Save button at top';
 		$f->description = 'Adds a save button at the top of the modal.';
 		$f->value = $data['saveHeadButton'];
+		$f->checked = ($f->value == 1) ? 'checked' : '';
+		$inputfields->add($f);
+
+		/* @var InputfieldCheckbox $f */
+		$f = $modules->InputfieldCheckbox;
+		$f->attr('name', 'breakoutButton');
+		$f->label = 'Breakout button at top';
+		$f->description = 'Adds a breakout button at the top of the modal to enable breaking out of the modal into a full page.';
+		$f->value = $data['breakoutButton'];
 		$f->checked = ($f->value == 1) ? 'checked' : '';
 		$inputfields->add($f);
 
